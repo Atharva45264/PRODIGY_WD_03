@@ -39,15 +39,12 @@ function checkWinner() {
   }
 }
 
-// Highlight the winning combination with disco lights
 function highlightWinner(combination) {
     combination.forEach(index => {
       const cell = cells[index];
       cell.classList.add('win');
     });
   }
-
-// Handle user clicks on a cell
 function handleClick(event) {
   const cell = event.target;
   const index = cell.getAttribute('data-index');
@@ -72,16 +69,13 @@ function resetGame() {
   gameBoard.fill('');
   cells.forEach(cell => {
     cell.textContent = '';
-    cell.className = 'cell'; // Remove all classes
+    cell.className = 'cell'; 
   });
   currentPlayer = 'X';
   isGameActive = true;
   updateStatus(`Player ${currentPlayer}'s turn`);
 }
 
-// Add event listeners
 cells.forEach(cell => cell.addEventListener('click', handleClick));
 resetButton.addEventListener('click', resetGame);
-
-// Initialize game status
 updateStatus(`Player ${currentPlayer}'s turn`);
