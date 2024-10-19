@@ -1,80 +1,87 @@
-let boxes = document.querySelectorAll(".box");
+// script.js
+const cells = document.querySelectorAll('.cell');
+const statusText = document.getElementById('status');
+const resetButton = document.getElementById('reset');
+let currentPlayer = 'X';
+let gameBoard = Array(9).fill('');
+let isGameActive = true;
 
-let turn = "X";
-let isGameOver = false;
+const winningCombinations = [
+  [0, 1, 2], [3, 4, 5], [6, 7, 8], 
+  [0, 3, 6], [1, 4, 7], [2, 5, 8], 
+  [0, 4, 8], [2, 4, 6]             
+];
 
-boxes.forEach(e =>{
-    e.innerHTML = ""
-    e.addEventListener("click", ()=>{
-        if(!isGameOver && e.innerHTML === ""){
-            e.innerHTML = turn;
-            cheakWin();
-            cheakDraw();
-            changeTurn();
-        }
-    })
-})
 
-function changeTurn(){
-    if(turn === "X"){
-        turn = "O";
-        document.querySelector(".bg").style.left = "85px";
-    }
-    else{
-        turn = "X";
-        document.querySelector(".bg").style.left = "0";
-    }
+function updateStatus(message) {
+  statusText.textContent = message;
 }
 
-function cheakWin(){
-    let winConditions = [
-        [0, 1, 2], [3, 4, 5], [6, 7, 8],
-        [0, 3, 6], [1, 4, 7], [2, 5, 8],
-        [0, 4, 8], [2, 4, 6]
-    ]
-    for(let i = 0; i<winConditions.length; i++){
-        let v0 = boxes[winConditions[i][0]].innerHTML;
-        let v1 = boxes[winConditions[i][1]].innerHTML;
-        let v2 = boxes[winConditions[i][2]].innerHTML;
-
-        if(v0 != "" && v0 === v1 && v0 === v2){
-            isGameOver = true;
-            document.querySelector("#results").innerHTML = turn + " win";
-            document.querySelector("#play-again").style.display = "inline"
-
-            for(j = 0; j<3; j++){
-                boxes[winConditions[i][j]].style.backgroundColor = "#08D9D6"
-                boxes[winConditions[i][j]].style.color = "#000"
-            }
-        }
+function checkWinner() {
+  for (let combination of winningCombinations) {
+    const [a, b, c] = combination;
+    if (
+      gameBoard[a] &&
+      gameBoard[a] === gameBoard[b] &&
+      gameBoard[a] === gameBoard[c]
+    ) {
+      highlightWinner(combination);
+      updateStatus(`Player ${currentPlayer} wins! 🎉`);
+      isGameActive = false;
+      return;
     }
+  }
+
+  // Check for a draw
+  if (!gameBoard.includes('')) {
+    updateStatus("It's a draw! 🤝");
+    isGameActive = false;
+  }
 }
 
-function cheakDraw(){
-    if(!isGameOver){
-        let isDraw = true;
-        boxes.forEach(e =>{
-            if(e.innerHTML === "") isDraw = false;
-        })
+// Highlight the winning combination with disco lights
+function highlightWinner(combination) {
+    combination.forEach(index => {
+      const cell = cells[index];
+      cell.classList.add('win');
+    });
+  }
 
-        if(isDraw){
-            isGameOver = true;
-            document.querySelector("#results").innerHTML = "Draw";
-            document.querySelector("#play-again").style.display = "inline"
-        }
-    }
+// Handle user clicks on a cell
+function handleClick(event) {
+  const cell = event.target;
+  const index = cell.getAttribute('data-index');
+
+  if (gameBoard[index] || !isGameActive) return;
+
+  gameBoard[index] = currentPlayer;
+  cell.textContent = currentPlayer;
+  cell.classList.add(currentPlayer.toLowerCase());
+
+  checkWinner();
+
+  // Switch players
+  currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+  if (isGameActive) {
+    updateStatus(`Player ${currentPlayer}'s turn`);
+  }
 }
 
-document.querySelector("#play-again").addEventListener("click", ()=>{
-    isGameOver = false;
-    turn = "X";
-    document.querySelector(".bg").style.left = "0";
-    document.querySelector("#results").innerHTML = "";
-    document.querySelector("#play-again").style.display = "none";
+// Reset the game
+function resetGame() {
+  gameBoard.fill('');
+  cells.forEach(cell => {
+    cell.textContent = '';
+    cell.className = 'cell'; // Remove all classes
+  });
+  currentPlayer = 'X';
+  isGameActive = true;
+  updateStatus(`Player ${currentPlayer}'s turn`);
+}
 
-    boxes.forEach(e =>{
-        e.innerHTML = "";
-        e.style.removeProperty("background-color");
-        e.style.color = "#fff"
-    })
-})
+// Add event listeners
+cells.forEach(cell => cell.addEventListener('click', handleClick));
+resetButton.addEventListener('click', resetGame);
+
+// Initialize game status
+updateStatus(`Player ${currentPlayer}'s turn`);
